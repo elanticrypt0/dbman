@@ -42,6 +42,13 @@ func Trying2ConnectSQLite(code, connname, engine, dbname string) error {
 	}
 }
 
+func Trying2ConnectSQLiteFileNotExists(code, filepath string) error {
+	return &DBManErr{
+		StatusCode: code,
+		Err:        errors.New(FileNotExistError(filepath)),
+	}
+}
+
 func Instance(code, name, name_lower string) error {
 	return &DBManErr{
 		StatusCode: code,

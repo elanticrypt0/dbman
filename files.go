@@ -5,13 +5,14 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
+	"github.com/k23dev/dbman/errors"
 )
 
 func LoadTomlFile[T any](file string, stru *T) {
 	tomlData := string(OpenFile(file))
 	_, err := toml.Decode(tomlData, &stru)
 	if err != nil {
-		log.Fatalln("Cannot parse file: %s\n" + file)
+		log.Fatalln(errors.FileNotLoaded(file))
 	}
 }
 
@@ -26,11 +27,11 @@ func OpenFile(file string) []byte {
 	if ExitsFile(file) {
 		filedata, err := os.ReadFile(file)
 		if err != nil {
-			log.Println("Can not open file: " + file)
+			log.Println(errors.FileNotOpened(file))
 		}
 		return filedata
 	} else {
-		log.Println("File doesn't exists: " + file)
+		log.Println(errors.FileNotExistError(file))
 		return []byte{}
 	}
 }

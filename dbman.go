@@ -30,12 +30,18 @@ func (me *DBMan) LoadConfigToml() {
 }
 
 func (me *DBMan) LoadConfigEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	envPath := "./.env"
+	if ExitsFile(envPath) {
+		err := godotenv.Load()
+		if err != nil {
+			log.Println(errors.FileNotLoaded(envPath))
+		}
+		connData := NewDBConfig(os.Getenv("DB_CONN_NAME"), os.Getenv("DB_ENGINE"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+		me.AddConn(connData)
+	} else {
+		log.Println(errors.FileNotExistError(envPath))
 	}
-	connData := NewDBConfig(os.Getenv("DB_CONN_NAME"), os.Getenv("DB_ENGINE"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
-	me.AddConn(connData)
+
 }
 
 func (me *DBMan) AddConn(connData DBConfig) {

@@ -99,12 +99,12 @@ func (me *DBConnection) connect2SQLite() (*gorm.DB, error) {
 		// gorm create sqlite db
 		conn, err := gorm.Open(sqlite.Open(dbname+".db"), &gorm.Config{})
 		if err != nil {
-			me.ErrConn = me.ReturnErrConn()
+			me.ErrConn = errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.DBName)
 			return nil, me.ErrConn
 		}
 		return conn, nil
 	} else {
-		return nil, errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.DBName)
+		return nil, errors.Trying2ConnectSQLiteFileNotExists("0", me.DBConfig.DBName)
 	}
 }
 
