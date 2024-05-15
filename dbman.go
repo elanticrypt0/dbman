@@ -52,14 +52,14 @@ func (me *DBMan) AddConn(connData DBConfig) {
 func (me *DBMan) GetInstance(name string) (*DBConnection, error) {
 	instance, err := me.getInstanceIfExists(name)
 	if err != nil {
-		return &DBConnection{}, err
+		return nil, err
 	}
 
 	// checks if the instance is connected
 	if instance.IsConnected() {
 		return instance, nil
 	} else {
-		return &DBConnection{}, instance.ErrConn
+		return nil, instance.ErrConn
 	}
 }
 
@@ -72,7 +72,7 @@ func (me *DBMan) getInstanceIfExists(name string) (*DBConnection, error) {
 		return &conn, nil
 	} else {
 		log.Printf("The connection %s (%s) does not exists \n", name, name_lower)
-		return &DBConnection{}, errors.Instance("0", name, name_lower)
+		return nil, errors.Instance("0", name, name_lower)
 	}
 }
 
