@@ -16,7 +16,7 @@ type DBConfig struct {
 	DBName    string `toml:"dbname"`
 }
 
-func NewConnData(connname, engine, host, port, user, passwd, dbname string) DBConfig {
+func NewDBConfig(connname, engine, host, port, user, passwd, dbname string) DBConfig {
 
 	port_aux, err := strconv.Atoi(port)
 	if err != nil {
