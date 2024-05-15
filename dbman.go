@@ -10,15 +10,18 @@ import (
 )
 
 type DBMan struct {
-	DBConn    map[string]DBConnection
-	Primary   *DBConnection
-	Secondary *DBConnection
-	Security  *DBConnection
+	Connection map[string]DBConnection
+	Primary    *DBConnection
+	Secondary  *DBConnection
+	Security   *DBConnection
 }
 
 func New() *DBMan {
 	return &DBMan{
-		DBConn: make(map[string]DBConnection),
+		Connection: make(map[string]DBConnection),
+		Primary:    nil,
+		Secondary:  nil,
+		Security:   nil,
 	}
 }
 
@@ -37,7 +40,7 @@ func (me *DBMan) LoadConfigEnv() {
 
 func (me *DBMan) AddConn(connData DBConfig) {
 	connNameLower := strings.ToLower(connData.ConnName)
-	me.DBConn[connNameLower] = NewDBConn(connData)
+	me.Connection[connNameLower] = NewDBConn(connData)
 }
 
 func (me *DBMan) GetInstance(name string) (*DBConnection, error) {
@@ -57,7 +60,7 @@ func (me *DBMan) GetInstance(name string) (*DBConnection, error) {
 // internal funtion
 func (me *DBMan) getInstanceIfExists(name string) (*DBConnection, error) {
 	name_lower := strings.ToLower(name)
-	conn, exists := me.DBConn[name_lower]
+	conn, exists := me.Connection[name_lower]
 	if exists {
 		// if the instance exists checks if has no error
 		return &conn, nil
@@ -68,7 +71,7 @@ func (me *DBMan) getInstanceIfExists(name string) (*DBConnection, error) {
 }
 
 func (me *DBMan) IsDBOk(connName string) bool {
-	conn := me.DBConn[connName]
+	conn := me.Connection[connName]
 	return conn.IsOk()
 }
 
