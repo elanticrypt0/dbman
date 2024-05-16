@@ -5,7 +5,7 @@
     port="3336"
     user="root"
     password="secret"
-    dbname="my_db"
+    dbname="homestead"
 
 [db.local]
     connName="local"
