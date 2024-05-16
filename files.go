@@ -9,10 +9,14 @@ import (
 )
 
 func LoadTomlFile[T any](file string, stru *T) {
-	tomlData := string(OpenFile(file))
-	_, err := toml.Decode(tomlData, &stru)
-	if err != nil {
-		log.Fatalln(errors.FileNotLoaded(file))
+	if ExitsFile(file) {
+		tomlData := string(OpenFile(file))
+		_, err := toml.Decode(tomlData, &stru)
+		if err != nil {
+			log.Fatalln(errors.FileNotLoaded(file))
+		}
+	} else {
+		log.Println(errors.FileNotExistError(file))
 	}
 }
 

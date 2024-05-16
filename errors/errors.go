@@ -28,6 +28,13 @@ func Connection(code, conn string) error {
 	}
 }
 
+func ConnectionFails(code string) error {
+	return &DBManErr{
+		StatusCode: code,
+		Err:        errors.New(GetFailedToConnect()),
+	}
+}
+
 func Trying2Connect(code, connname, engine, host, port, user, password, dbname string) error {
 	return &DBManErr{
 		StatusCode: code,

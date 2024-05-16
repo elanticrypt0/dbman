@@ -18,6 +18,7 @@ type DBConnection struct {
 	ErrConn  error
 }
 
+// Create new DB connection
 func NewDBConn(connData DBConfig) DBConnection {
 	return DBConnection{
 		DBConfig: connData,
@@ -26,14 +27,20 @@ func NewDBConn(connData DBConfig) DBConnection {
 	}
 }
 
+// Check if the connection has errors
 func (me *DBConnection) IsOk() bool {
 	return me.ErrConn == nil
 }
 
+// Checks if the connection is connected
 func (me *DBConnection) IsConnected() bool {
 	return me.Instance != nil
 }
 
+// Connects the database by engine
+// Mysql
+// Postgres
+// SQLite
 func (me *DBConnection) Connect() error {
 
 	switch me.DBConfig.Engine {
@@ -63,6 +70,7 @@ func (me *DBConnection) Connect() error {
 	return nil
 }
 
+// Connects to mysql
 func (me *DBConnection) connect2Mysql() (*gorm.DB, error) {
 	const dns = "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
 	dnsConfig := fmt.Sprintf(dns, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.DBName)
@@ -71,12 +79,13 @@ func (me *DBConnection) connect2Mysql() (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		me.ErrConn = me.ReturnErrConn()
+		me.ErrConn = me.returnErrConn()
 		return nil, me.ErrConn
 	}
 	return conn, nil
 }
 
+// Connects to postgres
 func (me *DBConnection) connect2Postgres() (*gorm.DB, error) {
 
 	const dns = "host=%s user=%s password=%s dbname=%s port=%s sslmode=disable "
@@ -86,13 +95,14 @@ func (me *DBConnection) connect2Postgres() (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		me.ErrConn = me.ReturnErrConn()
+		me.ErrConn = me.returnErrConn()
 		return nil, me.ErrConn
 	}
 	// todo
 	return conn, nil
 }
 
+// connects to sqlite
 func (me *DBConnection) connect2SQLite() (*gorm.DB, error) {
 	dbname := me.DBConfig.DBName
 	if ExitsFile(me.DBConfig.DBName) {
@@ -104,10 +114,13 @@ func (me *DBConnection) connect2SQLite() (*gorm.DB, error) {
 		}
 		return conn, nil
 	} else {
-		return nil, errors.Trying2ConnectSQLiteFileNotExists("0", me.DBConfig.DBName)
+		fmt.Println(errors.Trying2ConnectSQLiteFileNotExists("0", me.DBConfig.DBName))
+		return nil, errors.ConnectionFails("0")
 	}
 }
 
-func (me *DBConnection) ReturnErrConn() error {
-	return errors.Trying2Connect("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName)
+// Return the errors connection
+func (me *DBConnection) returnErrConn() error {
+	fmt.Println(errors.Trying2Connect("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName))
+	return errors.ConnectionFails("0")
 }

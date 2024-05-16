@@ -20,6 +20,10 @@ func GetConnectionError(conn string) string {
 	return fmt.Sprintf("The connection %s does not exists \n", conn)
 }
 
+func GetFailedToConnect() string {
+	return "DB connection fails."
+}
+
 func GetTrying2ConnectError(connname, engine, host, port, user, password, dbname string) string {
 	return fmt.Sprintf("Name: %q, Engine: %q host: %q, port: %q, user: %q, password: %q, database name: %q \n", connname, engine, host, port, user, password, dbname)
 }
