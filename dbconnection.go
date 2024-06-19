@@ -2,7 +2,6 @@ package dbman
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/glebarez/sqlite"
 	"github.com/k23dev/dbman/errors"
@@ -63,7 +62,7 @@ func (me *DBConnection) Connect() error {
 		}
 		me.Instance = conn
 	default:
-		log.Printf("The connections engine %q is not valid.\n", me.DBConfig.Engine)
+		errors.PrintStr(fmt.Sprintf("The connections engine %q is not valid.\n", me.DBConfig.Engine))
 		return nil
 	}
 
@@ -105,22 +104,22 @@ func (me *DBConnection) connect2Postgres() (*gorm.DB, error) {
 // connects to sqlite
 func (me *DBConnection) connect2SQLite() (*gorm.DB, error) {
 	dbname := me.DBConfig.DBName
-	if ExitsFile(me.DBConfig.DBName) {
-		// gorm create sqlite db
-		conn, err := gorm.Open(sqlite.Open(dbname+".db"), &gorm.Config{})
-		if err != nil {
-			me.ErrConn = errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.DBName)
-			return nil, me.ErrConn
-		}
-		return conn, nil
-	} else {
-		fmt.Println(errors.Trying2ConnectSQLiteFileNotExists("0", me.DBConfig.DBName))
-		return nil, errors.ConnectionFails("0")
+	// if the file doesnt exists then create the file and make the connection
+	if !ExitsFile(me.DBConfig.DBName) {
+		errors.Print(errors.Trying2ConnectSQLiteFileNotExists("66", me.DBConfig.DBName))
+		errors.PrintStr(fmt.Sprintf("Creating new %q", me.DBConfig.DBName))
 	}
+	// gorm create sqlite db
+	conn, err := gorm.Open(sqlite.Open(dbname), &gorm.Config{})
+	if err != nil {
+		me.ErrConn = errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.DBName)
+		return nil, me.ErrConn
+	}
+	return conn, nil
 }
 
 // Return the errors connection
 func (me *DBConnection) returnErrConn() error {
-	fmt.Println(errors.Trying2Connect("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName))
+	errors.FatalErr(errors.Trying2Connect("400", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName))
 	return errors.ConnectionFails("0")
 }

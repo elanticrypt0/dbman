@@ -1,7 +1,6 @@
 package dbman
 
 import (
-	"log"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -13,10 +12,10 @@ func LoadTomlFile[T any](file string, stru *T) {
 		tomlData := string(OpenFile(file))
 		_, err := toml.Decode(tomlData, &stru)
 		if err != nil {
-			log.Fatalln(errors.FileNotLoaded(file))
+			errors.FatalErr(err)
 		}
 	} else {
-		log.Println(errors.FileNotExistError(file))
+		errors.PrintStr(errors.FileNotExistError(file))
 	}
 }
 
@@ -31,11 +30,11 @@ func OpenFile(file string) []byte {
 	if ExitsFile(file) {
 		filedata, err := os.ReadFile(file)
 		if err != nil {
-			log.Println(errors.FileNotOpened(file))
+			errors.PrintStr(errors.FileNotOpened(file))
 		}
 		return filedata
 	} else {
-		log.Println(errors.FileNotExistError(file))
-		return []byte{}
+		errors.PrintStr(errors.FileNotExistError(file))
+		return nil
 	}
 }

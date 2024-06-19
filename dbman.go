@@ -1,11 +1,13 @@
 package dbman
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/k23dev/dbman/console"
 	"github.com/k23dev/dbman/errors"
 	"gorm.io/gorm"
 )
@@ -29,9 +31,11 @@ func New() *DBMan {
 // Load config from toml file
 // This can load several database configurations
 func (me *DBMan) LoadConfigToml(filepath string) {
-	configSlice := &[]DBConfig{}
+	configSlice := &DBConfigSlice{}
 	LoadTomlFile(filepath, configSlice)
-	for _, config := range *configSlice {
+
+	// log.Fatalf("%+v", *configSlice)
+	for _, config := range configSlice.Configurations {
 		me.addConn(config)
 	}
 }
@@ -84,7 +88,7 @@ func (me *DBMan) getInstanceIfExists(name string) (*DBConnection, error) {
 		// if the instance exists checks if has no error
 		return &conn, nil
 	} else {
-		log.Printf("The connection %s (%s) does not exists \n", name, name_lower)
+		errors.PrintStr(fmt.Sprintf("The connection %q (%q) does not exists \n", name, name_lower))
 		return nil, errors.Instance("0", name, name_lower)
 	}
 }
@@ -99,18 +103,22 @@ func (me *DBMan) IsDBOk(connName string) bool {
 // If is the first connection
 // by defaults is set as Primary
 func (me *DBMan) Connect(name string) error {
+	console.Print(fmt.Sprintf("Trying to connect to: %q", name))
 	conn, err := me.getInstanceIfExists(name)
 	if err != nil {
+		errors.Print(err)
 		return err
 	}
 	err = conn.Connect()
 
 	if err != nil {
+		errors.Print(err)
 		return err
 	}
 	if me.Primary == nil {
 		me.Primary = conn.Instance
 	}
+	console.Print(fmt.Sprintf("Connection stablishied to: %q", name))
 	return nil
 }
 

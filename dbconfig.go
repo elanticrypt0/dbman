@@ -1,8 +1,9 @@
 package dbman
 
 import (
-	"log"
 	"strconv"
+
+	"github.com/k23dev/dbman/errors"
 )
 
 type DBConfig struct {
@@ -20,7 +21,7 @@ func NewDBConfig(connname, engine, host, port, user, passwd, dbname string) DBCo
 
 	port_aux, err := strconv.Atoi(port)
 	if err != nil {
-		log.Println("Error converting DB_PORT as int")
+		errors.PrintStr("Error converting DB_PORT as int")
 	}
 
 	return DBConfig{
