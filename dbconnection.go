@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/glebarez/sqlite"
+	"github.com/k23dev/dbman/console"
 	"github.com/k23dev/dbman/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -40,7 +41,7 @@ func (me *DBConnection) IsConnected() bool {
 // Mysql
 // Postgres
 // SQLite
-func (me *DBConnection) Connect() error {
+func (me *DBConnection) Connect(rootPath string) error {
 
 	switch me.DBConfig.Engine {
 	case "mysql":
@@ -56,7 +57,7 @@ func (me *DBConnection) Connect() error {
 		}
 		me.Instance = conn
 	case "sqlite":
-		conn, err := me.connect2SQLite()
+		conn, err := me.connect2SQLite(rootPath)
 		if err != nil {
 			return err
 		}
@@ -102,17 +103,23 @@ func (me *DBConnection) connect2Postgres() (*gorm.DB, error) {
 }
 
 // connects to sqlite
-func (me *DBConnection) connect2SQLite() (*gorm.DB, error) {
+func (me *DBConnection) connect2SQLite(rootPath string) (*gorm.DB, error) {
 	dbname := me.DBConfig.DBName
+	dbpath := "./" + dbname
 	// if the file doesnt exists then create the file and make the connection
-	if !ExitsFile(me.DBConfig.DBName) {
-		errors.Print(errors.Trying2ConnectSQLiteFileNotExists("66", me.DBConfig.DBName))
-		errors.PrintStr(fmt.Sprintf("Creating new %q", me.DBConfig.DBName))
+	if !ExitsFile(dbpath) {
+		errors.Print(errors.Trying2ConnectSQLiteFileNotExists("66", dbpath))
+		// remove the first dot in case is "./_db/local"
+		dbpath = rootPath + "/" + dbname
+		if !ExitsFile(dbpath) {
+			errors.Print(errors.Trying2ConnectSQLiteFileNotExists("67", dbpath))
+			console.Print(fmt.Sprintf("Creating new %q", dbpath))
+		}
 	}
 	// gorm create sqlite db
-	conn, err := gorm.Open(sqlite.Open(dbname), &gorm.Config{})
+	conn, err := gorm.Open(sqlite.Open(dbpath), &gorm.Config{})
 	if err != nil {
-		me.ErrConn = errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.DBName)
+		me.ErrConn = errors.Trying2ConnectSQLite("0", me.DBConfig.ConnName, me.DBConfig.Engine, dbpath)
 		return nil, me.ErrConn
 	}
 	return conn, nil

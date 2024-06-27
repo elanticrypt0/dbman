@@ -13,6 +13,8 @@ import (
 )
 
 type DBMan struct {
+	rootPath   string
+	configPath string
 	connection map[string]DBConnection
 	Primary    *gorm.DB
 	Secondary  *gorm.DB
@@ -21,6 +23,8 @@ type DBMan struct {
 
 func New() *DBMan {
 	return &DBMan{
+		rootPath:   "/api/",
+		configPath: "/api/config",
 		connection: make(map[string]DBConnection),
 		Primary:    nil,
 		Secondary:  nil,
@@ -30,7 +34,14 @@ func New() *DBMan {
 
 // Load config from toml file
 // This can load several database configurations
+func (me *DBMan) SetRootPath(rootpath string) {
+	me.rootPath = rootpath
+}
+
+// Load config from toml file
+// This can load several database configurations
 func (me *DBMan) LoadConfigToml(filepath string) {
+	me.configPath = filepath
 	configSlice := &DBConfigSlice{}
 	LoadTomlFile(filepath, configSlice)
 
@@ -109,7 +120,7 @@ func (me *DBMan) Connect(name string) error {
 		errors.Print(err)
 		return err
 	}
-	err = conn.Connect()
+	err = conn.Connect(me.rootPath)
 
 	if err != nil {
 		errors.Print(err)
