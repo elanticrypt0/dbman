@@ -1,4 +1,4 @@
-module github.com/k23dev/dbman
+module github.com/elanticryp0/dbman
 
 go 1.23.1
 
