@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/elanticryp0/dbman/console"
+	"github.com/elanticryp0/dbman/errors"
 	"github.com/joho/godotenv"
-	"github.com/k23dev/dbman/console"
-	"github.com/k23dev/dbman/errors"
 	"gorm.io/gorm"
 )
 

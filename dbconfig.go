@@ -3,7 +3,7 @@ package dbman
 import (
 	"strconv"
 
-	"github.com/k23dev/dbman/errors"
+	"github.com/elanticryp0/dbman/errors"
 )
 
 type DBConfig struct {
