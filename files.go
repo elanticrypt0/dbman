@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/elanticryp0/dbman/errors"
+	"github.com/elanticrypt0/dbman/errors"
 )
 
 func LoadTomlFile[T any](file string, stru *T) {

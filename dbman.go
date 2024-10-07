@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/elanticryp0/dbman/console"
-	"github.com/elanticryp0/dbman/errors"
+	"github.com/elanticrypt0/dbman/console"
+	"github.com/elanticrypt0/dbman/errors"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )

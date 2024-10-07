@@ -3,8 +3,8 @@ package dbman
 import (
 	"fmt"
 
-	"github.com/elanticryp0/dbman/console"
-	"github.com/elanticryp0/dbman/errors"
+	"github.com/elanticrypt0/dbman/console"
+	"github.com/elanticrypt0/dbman/errors"
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
