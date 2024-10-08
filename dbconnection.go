@@ -73,7 +73,7 @@ func (me *DBConnection) Connect(rootPath string) error {
 // Connects to mysql
 func (me *DBConnection) connect2Mysql() (*gorm.DB, error) {
 	const dns = "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
-	dnsConfig := fmt.Sprintf(dns, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.DBName)
+	dnsConfig := fmt.Sprintf(dns, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.Host, me.DBConfig.Port, me.DBConfig.DBName)
 	// connect to gorn
 	conn, err := gorm.Open(mysql.Open(dnsConfig), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -89,7 +89,7 @@ func (me *DBConnection) connect2Mysql() (*gorm.DB, error) {
 func (me *DBConnection) connect2Postgres() (*gorm.DB, error) {
 
 	const dns = "host=%s user=%s password=%s dbname=%s port=%s sslmode=disable "
-	dnsConfig := fmt.Sprintf(dns, me.DBConfig.Host, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName, me.DBConfig.PortAsStr)
+	dnsConfig := fmt.Sprintf(dns, me.DBConfig.Host, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName, me.DBConfig.Port)
 	// connect to gorn
 	conn, err := gorm.Open(postgres.Open(dnsConfig), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -127,6 +127,6 @@ func (me *DBConnection) connect2SQLite(rootPath string) (*gorm.DB, error) {
 
 // Return the errors connection
 func (me *DBConnection) returnErrConn() error {
-	errors.FatalErr(errors.Trying2Connect("400", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.PortAsStr, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName))
+	errors.FatalErr(errors.Trying2Connect("400", me.DBConfig.ConnName, me.DBConfig.Engine, me.DBConfig.Host, me.DBConfig.Port, me.DBConfig.User, me.DBConfig.Password, me.DBConfig.DBName))
 	return errors.ConnectionFails("0")
 }
