@@ -110,3 +110,11 @@ if err!=nil{
 }
 // ...
 ```
+
+## Debug functions
+
+Are three functions to make a better debuggin. These functions print information of the instance:
+
+- PrintConnectionsList
+- PrintActiveConnectionsList
+- CheckDefaultConnections
