@@ -13,12 +13,13 @@ import (
 )
 
 type DBMan struct {
-	rootPath   string
-	configPath string
-	connection map[string]DBConnection
-	Primary    *gorm.DB
-	Secondary  *gorm.DB
-	Security   *gorm.DB
+	rootPath         string
+	configPath       string
+	connection       map[string]DBConnection
+	activeConnection []string
+	Primary          *gorm.DB
+	Secondary        *gorm.DB
+	Security         *gorm.DB
 }
 
 func New() *DBMan {
@@ -74,6 +75,10 @@ func (me *DBMan) addConn(connData DBConfig) {
 	me.connection[connNameLower] = NewDBConn(connData)
 }
 
+func (me *DBMan) addActiveConn(conn string) {
+	me.activeConnection = append(me.activeConnection, conn)
+}
+
 // Get one instance if the instance is connected
 // otherwise returns nil and error.
 // You need to call this from your code to use the gorm.DB
@@ -126,9 +131,18 @@ func (me *DBMan) Connect(name string) error {
 		errors.Print(err)
 		return err
 	}
+
+	me.connection[name] = *conn
+
+	// automatic set of primary or secondary
 	if me.Primary == nil {
 		me.Primary = conn.Instance
 	}
+	if me.Secondary == nil {
+		me.Secondary = conn.Instance
+	}
+
+	me.addActiveConn(conn.DBConfig.ConnName)
 	console.Print(fmt.Sprintf("Connection stablishied to: %q", name))
 	return nil
 }
@@ -140,7 +154,7 @@ func (me *DBMan) SetPrimary(name string) error {
 		return err
 	}
 	if conn.IsOk() {
-		me.Secondary = conn.Instance
+		me.Primary = conn.Instance
 		return nil
 	} else {
 		return conn.ErrConn
@@ -168,9 +182,45 @@ func (me *DBMan) SetSecurity(name string) error {
 		return err
 	}
 	if conn.IsOk() {
-		me.Secondary = conn.Instance
+		me.Security = conn.Instance
 		return nil
 	} else {
 		return conn.ErrConn
 	}
+}
+
+/*  DEBUG Printing information  */
+
+func (me *DBMan) PrintConnectionsList() {
+	fmt.Println("")
+	log.Println("DBMAN > Connections list")
+	fmt.Println("---------------------------------------------")
+	for _, connection := range me.connection {
+		fmt.Printf("- %q \n", connection)
+	}
+	fmt.Printf("\n")
+
+}
+
+func (me *DBMan) PrintActiveConnectionsList() {
+	fmt.Println("")
+	log.Println("DBMAN > Active connections list")
+	fmt.Println("----------------------------------------------------")
+	for _, activeConn := range me.activeConnection {
+		fmt.Printf("- %q \n", activeConn)
+	}
+	fmt.Printf("\n")
+
+}
+
+func (me *DBMan) CheckDefaultConnections() {
+
+	fmt.Println("")
+	log.Println("DBMAN > Check defaults connections list")
+	fmt.Println("---------------------------------------------------------")
+
+	fmt.Printf("- Primary (instance): %v \n", me.Primary)
+	fmt.Printf("- Secondary (instance): %v \n", me.Secondary)
+	fmt.Printf("- Security (instance): %v \n", me.Security)
+
 }
