@@ -3,8 +3,9 @@ package dbman
 import (
 	"os"
 
+	"dbman/errors"
+
 	"github.com/BurntSushi/toml"
-	"github.com/elanticrypt0/dbman/errors"
 )
 
 func LoadTomlFile[T any](file string, stru *T) {

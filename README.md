@@ -10,7 +10,7 @@ This makes posible that your applications doesn't panic if the db connection is 
 # Install
 
 ```go
-go get github.com/elanticrypt0/dbman
+go get dbman
 ```
 
 # Config

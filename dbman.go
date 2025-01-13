@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/elanticrypt0/dbman/console"
-	"github.com/elanticrypt0/dbman/errors"
+	"dbman/console"
+	"dbman/errors"
+
+	"strconv"
+
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
@@ -35,8 +39,28 @@ func New() *DBMan {
 
 // Load config from toml file
 // This can load several database configurations
-func (me *DBMan) SetRootPath(rootpath string) {
-	me.rootPath = rootpath
+func (me *DBMan) SetRootPath(rootpath string) error {
+	if rootpath == "" {
+		return fmt.Errorf("root path cannot be empty")
+	}
+
+	if !filepath.IsAbs(rootpath) {
+		return fmt.Errorf("root path must be absolute")
+	}
+
+	// Sanitizar y validar la ruta
+	cleanPath := filepath.Clean(rootpath)
+	if strings.Contains(cleanPath, "..") || strings.Contains(cleanPath, "~") {
+		return fmt.Errorf("invalid path: contains parent directory references or home directory")
+	}
+
+	// Validar caracteres especiales
+	if strings.ContainsAny(cleanPath, "<>:\"\\|?*") {
+		return fmt.Errorf("invalid path: contains special characters")
+	}
+
+	me.rootPath = cleanPath
+	return nil
 }
 
 // Load config from toml file
@@ -54,19 +78,50 @@ func (me *DBMan) LoadConfigToml(filepath string) {
 
 // Load database config from env file.
 // For just one connection
-func (me *DBMan) LoadConfigEnv() {
+func (me *DBMan) LoadConfigEnv() error {
 	envPath := "./.env"
+	if !ExitsFile(envPath) {
+		return fmt.Errorf("env file not found: %s", envPath)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("failed to load env file: %w", err)
+	}
+
+	// Validar que existan las variables necesarias
+	required := []string{"DB_CONN_NAME", "DB_ENGINE", "DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"}
+	for _, v := range required {
+		if os.Getenv(v) == "" {
+			return fmt.Errorf("missing required env var: %s", v)
+		}
+	}
+
+	// Validar formato de puerto
+	if port := os.Getenv("DB_PORT"); port != "" {
+		if _, err := strconv.Atoi(port); err != nil {
+			return fmt.Errorf("invalid port number: %s", port)
+		}
+	}
+
 	if ExitsFile(envPath) {
 		err := godotenv.Load()
 		if err != nil {
 			log.Println(errors.FileNotLoaded(envPath))
 		}
-		connData := NewDBConfig(os.Getenv("DB_CONN_NAME"), os.Getenv("DB_ENGINE"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+		connData := NewDBConfig(
+			os.Getenv("DB_CONN_NAME"),
+			os.Getenv("DB_ENGINE"),
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_PASSWORD"),
+			os.Getenv("DB_NAME"),
+		)
 		me.addConn(connData)
 	} else {
 		log.Println(errors.FileNotExistError(envPath))
 	}
-
+	return nil
 }
 
 // Private function to add one connection to the connection slice
@@ -223,4 +278,21 @@ func (me *DBMan) CheckDefaultConnections() {
 	fmt.Printf("- Secondary (instance): %v \n", me.Secondary)
 	fmt.Printf("- Security (instance): %v \n", me.Security)
 
+}
+
+// Retrive the active connections instances
+func (me *DBMan) GetActiveConnectionsInstances() ([]*gorm.DB, error) {
+	var defaultReturn []*gorm.DB
+	var instances []*gorm.DB
+	for _, instance := range me.activeConnection {
+
+		activeInstance, err := me.GetInstance(instance)
+		if err != nil {
+			return defaultReturn, fmt.Errorf("error: retriving active instances")
+		}
+
+		instances = append(instances, activeInstance)
+	}
+
+	return instances, nil
 }
